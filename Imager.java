@@ -1,5 +1,4 @@
 import java.net.*;
-import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.InputStream;
 import java.io.FileOutputStream;
@@ -73,20 +72,6 @@ class Imager {
             for(String image_url : imageLinks) {
                 Imager.downloadImage(image_url, prefix+counter++);
             }
-        }
-    }
-    public static void main(String[] args) {
-        try {
-            Scanner input = new Scanner(System.in);
-            System.out.print("URL: ");
-            String pageUrl = input.nextLine();
-            Imager imager = new Imager(pageUrl);
-            imager.fetchImageLinks();
-            imager.initiateDownloads();
-            input.close();
-        }
-        catch (Exception e) {
-            System.out.println("Exception raised: "+e);
         }
     }
 }
