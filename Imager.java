@@ -32,9 +32,9 @@ class Imager {
                 if(choice.equalsIgnoreCase("n")) {
                     System.out.println("Download aborted.");
                 }
-            }
-            else {
-                // TODO: open image streams, save em to files...
+                else {
+                    // TODO: open image streams, save em to files...
+                }
             }
         }
         catch(Exception e) {
