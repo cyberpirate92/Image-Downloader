@@ -10,8 +10,8 @@ class ImagerGUI extends JFrame implements ActionListener {
 
     public ImagerGUI() {
 
-        urlField = new JTextField();
-        prefixField = new JTextField();
+        urlField = new JTextField(20);
+        prefixField = new JTextField(10);
 
         fetchButton = new JButton("Go!");
         downloadButton = new JButton("Download");
@@ -28,6 +28,7 @@ class ImagerGUI extends JFrame implements ActionListener {
         // initially download button needs to be disabled.
         downloadButton.setEnabled(false);
 
+        this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setSize(400,400);
@@ -40,7 +41,7 @@ class ImagerGUI extends JFrame implements ActionListener {
         this.getContentPane().add(centerPanel, BorderLayout.CENTER);
         this.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
-        topPanel.setLayout(new FlowLayout());
+        topPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
         topPanel.add(new JLabel("URL: "));
         topPanel.add(urlField);
         topPanel.add(fetchButton);

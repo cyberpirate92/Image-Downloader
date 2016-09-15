@@ -12,6 +12,16 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 class Imager {
+
+    private ArrayList<String> imageLinks;
+    private String pageURL;
+    private boolean fetchComplete;
+
+    public Imager(String pageURL) {
+        imageLinks = new ArrayList<String>();
+        this.pageURL = pageURL;
+        this.fetchComplete = false;
+    }
     public static void downloadImage(String image_url, String filename_to_save) throws IOException {
         String extension = image_url.substring(image_url.lastIndexOf("."), image_url.length());
         if(extension != null) {
@@ -30,43 +40,53 @@ class Imager {
         FileOutputStream fileWriter = new FileOutputStream(filename_to_save);
         fileWriter.write(outputStream.toByteArray());
         fileWriter.close();
+        System.out.println(filename_to_save);
     }
-    public static void main(String[] args) {
-        ArrayList<String> imageLinks = new ArrayList<String>();
-        Scanner input = new Scanner(System.in);
-        System.out.println("Enter page URL: ");
-        String url = input.nextLine();
+    public void fetchImageLinks() {
         try{
-            Document doc = Jsoup.connect(url).get();
+            Document doc = Jsoup.connect(this.pageURL).get();
             Elements media = doc.select("[src]");
             for(Element src : media) {
                 if(src.tagName().equals("img")) {
                     imageLinks.add(src.attr("abs:src"));
                 }
             }
-            int count = 0;
-            input = new Scanner(System.in);
-            System.out.println("Number of images: " + imageLinks.size());
-            for(String s : imageLinks) {
-                System.out.println("["+(++count) + "]: " + s);
-            }
-            if(imageLinks.size() > 0) {
-                System.out.print("Download All [Y/N] ?: ");
-                String choice = input.nextLine();
-                if(choice.equalsIgnoreCase("n")) {
-                    System.out.println("Download aborted.");
-                }
-                else {
-                    count = 0;
-                    // TODO: open image streams, save em to files...
-                    for(String image_url : imageLinks) {
-                        Imager.downloadImage(image_url, "img"+count);
-                    }
-                }
-            }
         }
         catch(Exception e) {
             System.out.println("Exception : " + e);
+        }
+        this.fetchComplete = true;
+    }
+    public int getCount() {
+        if(fetchComplete) return imageLinks.size();
+        else return 0;
+    }
+    public boolean isFetchComplete() {
+        return fetchComplete;
+    }
+    public void initiateDownloads() throws IOException {
+        initiateDownloads("img");
+    }
+    public void initiateDownloads(String prefix) throws IOException {
+        if(fetchComplete && imageLinks.size() > 0) {
+            int counter = 1;
+            for(String image_url : imageLinks) {
+                Imager.downloadImage(image_url, prefix+counter++);
+            }
+        }
+    }
+    public static void main(String[] args) {
+        try {
+            Scanner input = new Scanner(System.in);
+            System.out.print("URL: ");
+            String pageUrl = input.nextLine();
+            Imager imager = new Imager(pageUrl);
+            imager.fetchImageLinks();
+            imager.initiateDownloads();
+            input.close();
+        }
+        catch (Exception e) {
+            System.out.println("Exception raised: "+e);
         }
     }
 }
