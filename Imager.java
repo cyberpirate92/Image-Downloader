@@ -5,6 +5,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import javax.swing.ImageIcon;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -73,5 +76,19 @@ class Imager {
                 Imager.downloadImage(image_url, prefix+counter++);
             }
         }
+    }
+    public String getLink(int n) {
+        if(n >= 0 && n < imageLinks.size() )
+            return imageLinks.get(n);
+        else
+            return null;
+    }
+    public ImageIcon getImageIcon(int n) throws IOException {
+        if(n >= 0 && n < imageLinks.size() ) {
+            BufferedImage image = ImageIO.read(new URL(imageLinks.get(n)));
+            return new ImageIcon(image);
+        }
+        else
+            return null;
     }
 }
