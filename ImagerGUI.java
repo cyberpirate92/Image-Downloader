@@ -4,11 +4,13 @@ import javax.swing.*;
 
 class ImagerGUI extends JFrame implements ActionListener {
 
+    Imager imager;
     JPanel topPanel, centerPanel, buttonPanel;
-    //JScrollPane centerScrollPane;
+    JScrollPane centerScrollPane;
     JTextField urlField, prefixField;
     JButton fetchButton, downloadButton, resetButton, exitButton;
     FlowLayout imageGrid;
+    JLabel statusLabel;
 
     public ImagerGUI() {
 
@@ -26,7 +28,10 @@ class ImagerGUI extends JFrame implements ActionListener {
         centerPanel = new JPanel();
         buttonPanel = new JPanel();
 
-        //centerScrollPane = new JScrollPane();
+        statusLabel = new JLabel();
+        statusLabel.setForeground(Color.BLUE);
+
+        //centerScrollPane = new JScrollPane(centerPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         initLayout();
         registerEventListeners();
@@ -43,24 +48,25 @@ class ImagerGUI extends JFrame implements ActionListener {
     public void initLayout() {
         this.setLayout(new BorderLayout());
 
-        this.getContentPane().add(topPanel, BorderLayout.NORTH);
-        //this.getContentPane().add(centerScrollPane, BorderLayout.CENTER);
-        this.getContentPane().add(centerPanel, BorderLayout.CENTER);
-        this.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-
         topPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
         topPanel.add(new JLabel("URL: "));
         topPanel.add(urlField);
         topPanel.add(fetchButton);
 
-        //centerScrollPane.add(centerPanel);
-        //centerScrollPane.setPreferredSize(new Dimension(450, 110));
         centerPanel.setLayout(imageGrid);
+        centerPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        //centerScrollPane.add(centerPanel);
 
         buttonPanel.setLayout(new FlowLayout());
         buttonPanel.add(downloadButton);
         buttonPanel.add(resetButton);
         buttonPanel.add(exitButton);
+        buttonPanel.add(statusLabel);
+
+        this.getContentPane().add(topPanel, BorderLayout.NORTH);
+        //this.getContentPane().add(centerScrollPane, BorderLayout.CENTER);
+        this.getContentPane().add(centerPanel, BorderLayout.CENTER);
+        this.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
     }
     public void registerEventListeners() {
         fetchButton.addActionListener(this);
@@ -75,35 +81,58 @@ class ImagerGUI extends JFrame implements ActionListener {
         JButton src = (JButton)e.getSource();
         if(src == fetchButton) {
             String baseURL = urlField.getText();
-            Imager imager = new Imager(baseURL);
+            imager = new Imager(baseURL);
             imager.fetchImageLinks();
             int imageCount = imager.getCount();
+            statusLabel.setText("Fecthing " + imageCount + " Images");
             for(int i=0; i<imager.getCount(); i++) {
                 try {
                     JLabel imageLabel = new JLabel(imager.getImageIcon(i));
-                    imageLabel.setPreferredSize(new Dimension(50,50));
+                    imageLabel.setPreferredSize(new Dimension(100,100));
+                    imageLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                    imageLabel.setBackground(Color.WHITE);
                     centerPanel.add(imageLabel);
                     centerPanel.validate();
                     flag = true;
                 }
                 catch(Exception ex) {
                     System.out.println("Exception caught: " + ex);
+                    ex.printStackTrace();
                 }
+                statusLabel.setText("");
             }
             if(flag) {
                 downloadButton.setEnabled(flag);
             }
         }
         else if(src == downloadButton) {
-            // TODO: link to the download function
-
+            try {
+                statusLabel.setText("Downloading ... Please wait!");
+                int downloadCount = imager.initiateDownloads();
+                statusLabel.setText("Download complete, " + downloadCount + " images downloaded.");
+            }
+            catch(Exception ex) {
+                System.out.println("Exception caught: "+ex);
+                statusLabel.setText("Error: Download failed!");
+                ex.printStackTrace();
+            }
         }
         else if(src == resetButton) {
             urlField.setText("");
             imageGrid = new FlowLayout();
+            statusLabel.setText("");
         }
         else if(src == exitButton) {
             // TODO: add a confirmation dialog here
+            int option = JOptionPane.showConfirmDialog(null, "Are you sure ?", "Quit", JOptionPane.YES_NO_OPTION);
+            switch(option) {
+                case JOptionPane.NO_OPTION:
+                    break;
+                case JOptionPane.YES_OPTION:
+                    this.dispose();
+                    System.exit(0);
+                    break;
+            }
         }
     }
 }

@@ -66,16 +66,17 @@ class Imager {
     public boolean isFetchComplete() {
         return fetchComplete;
     }
-    public void initiateDownloads() throws IOException {
-        initiateDownloads("img");
+    public int initiateDownloads() throws IOException {
+        return initiateDownloads("img");
     }
-    public void initiateDownloads(String prefix) throws IOException {
+    public int initiateDownloads(String prefix) throws IOException {
+        int counter = 0;
         if(fetchComplete && imageLinks.size() > 0) {
-            int counter = 1;
             for(String image_url : imageLinks) {
                 Imager.downloadImage(image_url, prefix+counter++);
             }
         }
+        return counter;
     }
     public String getLink(int n) {
         if(n >= 0 && n < imageLinks.size() )
