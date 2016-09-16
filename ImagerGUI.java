@@ -8,11 +8,11 @@ class ImagerGUI extends JFrame implements ActionListener {
     //JScrollPane centerScrollPane;
     JTextField urlField, prefixField;
     JButton fetchButton, downloadButton, resetButton, exitButton;
-    GridLayout imageGrid;
+    FlowLayout imageGrid;
 
     public ImagerGUI() {
 
-        imageGrid = new GridLayout(1, 1, 1, 1);
+        imageGrid = new FlowLayout();
 
         urlField = new JTextField(20);
         prefixField = new JTextField(10);
@@ -71,30 +71,36 @@ class ImagerGUI extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        boolean flag = false;
         JButton src = (JButton)e.getSource();
         if(src == fetchButton) {
-            // TODO: fetch the image links from the provided base URL
             String baseURL = urlField.getText();
             Imager imager = new Imager(baseURL);
             imager.fetchImageLinks();
             int imageCount = imager.getCount();
-            imageGrid = new GridLayout(imageCount/3 + 1, 3, 5, 5); // creating an image grid to display the images
             for(int i=0; i<imager.getCount(); i++) {
                 try {
-                    centerPanel.add(new JLabel(imager.getImageIcon(i)));
-                    this.pack();
+                    JLabel imageLabel = new JLabel(imager.getImageIcon(i));
+                    imageLabel.setPreferredSize(new Dimension(50,50));
+                    centerPanel.add(imageLabel);
+                    centerPanel.validate();
+                    flag = true;
                 }
                 catch(Exception ex) {
                     System.out.println("Exception caught: " + ex);
                 }
             }
+            if(flag) {
+                downloadButton.setEnabled(flag);
+            }
         }
         else if(src == downloadButton) {
             // TODO: link to the download function
+
         }
         else if(src == resetButton) {
             urlField.setText("");
-            imageGrid = new GridLayout(1, 1, 1, 1);
+            imageGrid = new FlowLayout();
         }
         else if(src == exitButton) {
             // TODO: add a confirmation dialog here
