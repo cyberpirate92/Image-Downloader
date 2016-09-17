@@ -5,7 +5,7 @@ import javax.swing.*;
 class ImagerGUI extends JFrame implements ActionListener {
 
     Imager imager;
-    JPanel topPanel, centerPanel, buttonPanel;
+    JPanel topPanel, centerPanel, bottomPanel, buttonPanel, prefixPanel, statusPanel;
     JScrollPane centerScrollPane;
     JTextField urlField, prefixField;
     JButton fetchButton, downloadButton, resetButton, exitButton;
@@ -27,6 +27,9 @@ class ImagerGUI extends JFrame implements ActionListener {
         topPanel = new JPanel();
         centerPanel = new JPanel();
         buttonPanel = new JPanel();
+        prefixPanel = new JPanel();
+        statusPanel = new JPanel();
+        bottomPanel = new JPanel();
 
         statusLabel = new JLabel();
         statusLabel.setForeground(Color.BLUE);
@@ -42,13 +45,13 @@ class ImagerGUI extends JFrame implements ActionListener {
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
-        this.setSize(400,400);
+        this.setSize(500,500);
         this.setVisible(true);
     }
     public void initLayout() {
         this.setLayout(new BorderLayout());
 
-        topPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
+        topPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         topPanel.add(new JLabel("URL: "));
         topPanel.add(urlField);
         topPanel.add(fetchButton);
@@ -57,16 +60,27 @@ class ImagerGUI extends JFrame implements ActionListener {
         centerPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         //centerScrollPane.add(centerPanel);
 
-        buttonPanel.setLayout(new FlowLayout());
+        prefixPanel.setLayout(new FlowLayout());
+        prefixPanel.add(new JLabel("Filename Prefix: "));
+        prefixPanel.add(prefixField);
+
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(downloadButton);
         buttonPanel.add(resetButton);
         buttonPanel.add(exitButton);
-        buttonPanel.add(statusLabel);
+
+        statusPanel.setLayout(new BorderLayout());
+        statusPanel.add(statusLabel, BorderLayout.CENTER);
+
+        bottomPanel.setLayout(new GridLayout(3,1,0,0));
+        bottomPanel.add(prefixPanel);
+        bottomPanel.add(buttonPanel);
+        bottomPanel.add(statusPanel);
 
         this.getContentPane().add(topPanel, BorderLayout.NORTH);
         //this.getContentPane().add(centerScrollPane, BorderLayout.CENTER);
         this.getContentPane().add(centerPanel, BorderLayout.CENTER);
-        this.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+        this.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
     }
     public void registerEventListeners() {
         fetchButton.addActionListener(this);
@@ -107,8 +121,13 @@ class ImagerGUI extends JFrame implements ActionListener {
         }
         else if(src == downloadButton) {
             try {
+                int downloadCount = 0;
+                String filenamePrefix = prefixField.getText().trim();
                 statusLabel.setText("Downloading ... Please wait!");
-                int downloadCount = imager.initiateDownloads();
+                if(filenamePrefix == null || filenamePrefix.equals(""))
+                    downloadCount = imager.initiateDownloads();
+                else if(filenamePrefix.length() > 0)
+                    downloadCount = imager.initiateDownloads(filenamePrefix);
                 statusLabel.setText("Download complete, " + downloadCount + " images downloaded.");
             }
             catch(Exception ex) {
