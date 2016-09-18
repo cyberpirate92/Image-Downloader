@@ -2,7 +2,7 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 
-class ImagerGUI extends JFrame implements ActionListener {
+class ImagerGUI extends JFrame implements ActionListener, KeyListener {
 
     Imager imager;
     JPanel topPanel, centerPanel, bottomPanel, buttonPanel, prefixPanel, statusPanel;
@@ -87,37 +87,33 @@ class ImagerGUI extends JFrame implements ActionListener {
         downloadButton.addActionListener(this);
         resetButton.addActionListener(this);
         exitButton.addActionListener(this);
+        urlField.addKeyListener(this);
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        int keyTyped = (int)e.getKeyCode();
+        statusLabel.setText("Key Typed: " + keyTyped);
+        if(keyTyped == 10) {
+            fetchImages();
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        boolean flag = false;
         JButton src = (JButton)e.getSource();
         if(src == fetchButton) {
-            String baseURL = urlField.getText();
-            imager = new Imager(baseURL);
-            imager.fetchImageLinks();
-            int imageCount = imager.getCount();
-            statusLabel.setText("Fecthing " + imageCount + " Images");
-            for(int i=0; i<imager.getCount(); i++) {
-                try {
-                    JLabel imageLabel = new JLabel(imager.getImageIcon(i));
-                    imageLabel.setPreferredSize(new Dimension(100,100));
-                    imageLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                    imageLabel.setBackground(Color.WHITE);
-                    centerPanel.add(imageLabel);
-                    centerPanel.validate();
-                    flag = true;
-                }
-                catch(Exception ex) {
-                    System.out.println("Exception caught: " + ex);
-                    ex.printStackTrace();
-                }
-                statusLabel.setText("");
-            }
-            if(flag) {
-                downloadButton.setEnabled(flag);
-            }
+            fetchImages();
         }
         else if(src == downloadButton) {
             try {
@@ -152,6 +148,34 @@ class ImagerGUI extends JFrame implements ActionListener {
                     System.exit(0);
                     break;
             }
+        }
+    }
+
+    public void fetchImages() {
+        boolean flag = false;
+        String baseURL = urlField.getText();
+        imager = new Imager(baseURL);
+        imager.fetchImageLinks();
+        int imageCount = imager.getCount();
+        statusLabel.setText("Fecthing " + imageCount + " Images");
+        for(int i=0; i<imager.getCount(); i++) {
+            try {
+                JLabel imageLabel = new JLabel(imager.getImageIcon(i));
+                imageLabel.setPreferredSize(new Dimension(100,100));
+                imageLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                imageLabel.setBackground(Color.WHITE);
+                centerPanel.add(imageLabel);
+                centerPanel.validate();
+                flag = true;
+            }
+            catch(Exception ex) {
+                System.out.println("Exception caught: " + ex);
+                ex.printStackTrace();
+            }
+            statusLabel.setText("");
+        }
+        if(flag) {
+            downloadButton.setEnabled(flag);
         }
     }
 }
