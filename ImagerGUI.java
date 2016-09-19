@@ -1,6 +1,7 @@
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
+import java.io.IOException;
 
 class ImagerGUI extends JFrame implements ActionListener, KeyListener {
 
@@ -11,8 +12,11 @@ class ImagerGUI extends JFrame implements ActionListener, KeyListener {
     JButton fetchButton, downloadButton, resetButton, exitButton;
     FlowLayout imageGrid;
     JLabel statusLabel;
+    boolean downloaded, fetched;
 
     public ImagerGUI() {
+
+        downloaded = fetched = false;
 
         imageGrid = new FlowLayout();
 
@@ -117,14 +121,7 @@ class ImagerGUI extends JFrame implements ActionListener, KeyListener {
         }
         else if(src == downloadButton) {
             try {
-                int downloadCount = 0;
-                String filenamePrefix = prefixField.getText().trim();
-                statusLabel.setText("Downloading ... Please wait!");
-                if(filenamePrefix == null || filenamePrefix.equals(""))
-                    downloadCount = imager.initiateDownloads();
-                else if(filenamePrefix.length() > 0)
-                    downloadCount = imager.initiateDownloads(filenamePrefix);
-                statusLabel.setText("Download complete, " + downloadCount + " images downloaded.");
+                initDownload();
             }
             catch(Exception ex) {
                 System.out.println("Exception caught: "+ex);
@@ -138,21 +135,25 @@ class ImagerGUI extends JFrame implements ActionListener, KeyListener {
             statusLabel.setText("");
         }
         else if(src == exitButton) {
-            // TODO: add a confirmation dialog here
-            int option = JOptionPane.showConfirmDialog(null, "Are you sure ?", "Quit", JOptionPane.YES_NO_OPTION);
-            switch(option) {
-                case JOptionPane.NO_OPTION:
-                    break;
-                case JOptionPane.YES_OPTION:
-                    this.dispose();
-                    System.exit(0);
-                    break;
+            if(fetched && !downloaded) {
+                int option = JOptionPane.showConfirmDialog(null, "Are you sure to exit without downloading ?", "Quit", JOptionPane.YES_NO_OPTION);
+                switch(option) {
+                    case JOptionPane.NO_OPTION:
+                        break;
+                    case JOptionPane.YES_OPTION:
+                        this.dispose();
+                        System.exit(0);
+                        break;
+                }
+            }
+            else if(!fetched) {
+                this.dispose();
+                System.exit(0);
             }
         }
     }
 
     public void fetchImages() {
-        boolean flag = false;
         String baseURL = urlField.getText();
         imager = new Imager(baseURL);
         imager.fetchImageLinks();
@@ -166,7 +167,7 @@ class ImagerGUI extends JFrame implements ActionListener, KeyListener {
                 imageLabel.setBackground(Color.WHITE);
                 centerPanel.add(imageLabel);
                 centerPanel.validate();
-                flag = true;
+                fetched = true;
             }
             catch(Exception ex) {
                 System.out.println("Exception caught: " + ex);
@@ -174,8 +175,32 @@ class ImagerGUI extends JFrame implements ActionListener, KeyListener {
             }
             statusLabel.setText("");
         }
-        if(flag) {
-            downloadButton.setEnabled(flag);
+        if(fetched) {
+            downloadButton.setEnabled(fetched);
+        }
+    }
+
+    public void initDownload() throws IOException {
+        int downloadCount = 0;
+        String filenamePrefix = prefixField.getText().trim();
+        statusLabel.setText("Downloading ... Please wait!");
+        if(filenamePrefix == null || filenamePrefix.equals("")) {
+            int option = JOptionPane.showConfirmDialog(null, "No filename prefix have been set\n Are you sure? ", "Confirm", JOptionPane.YES_NO_OPTION);
+            switch(option) {
+                case JOptionPane.YES_OPTION:
+                    downloadCount = imager.initiateDownloads();
+                    break;
+                case JOptionPane.NO_OPTION:
+                    statusLabel.setText("Download aborted.");
+                    break;
+            }
+        }
+        else if(filenamePrefix.length() > 0) {
+            downloadCount = imager.initiateDownloads(filenamePrefix);
+            if(downloadCount > 0) {
+                statusLabel.setText("Download complete, " + downloadCount + " images downloaded.");
+                downloaded = true;
+            }
         }
     }
 }
